@@ -1,0 +1,27 @@
+# Ignore datasets
+*.csv
+*.zip
+*.xls
+*.xlsx
+
+# Ignore Python bytecode
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Ignore virtual environments
+.venv/
+env/
+venv/
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore log and temporary files
+*.log
+*.tmp
+*.bak
