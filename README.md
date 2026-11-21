@@ -66,6 +66,14 @@ docker compose up --build
 
 The dashboard is at `http://localhost:5173`; the API docs are at `http://localhost:8000/docs`. Compose credentials are local development values. Replace them and add reviewer identity, secret management, and deployment hardening before any shared or production environment.
 
+## Deploy a Render demo
+
+The root `render.yaml` defines a public dashboard, API, PostgreSQL database, Redis-compatible Key Value instance, and outbox worker. Connect this GitHub repository to Render as a Blueprint and select the `main` branch. The dashboard is built as a static site; the API and worker use the backend Dockerfile.
+
+This Blueprint is configured for a portfolio demo with synthetic transactions. It sets the API to development mode so the browser dashboard can use the demo endpoints; do not send real payment or personal data to this deployment. Restrict CORS and add real authentication before using it beyond a demo.
+
+The dashboard, API, PostgreSQL, and Key Value use free plans. Render's background worker has no free plan; the Blueprint uses its smallest worker plan, currently listed at about $7/month. Free PostgreSQL expires after 30 days, and free Key Value data is not persistent across restarts, so this setup is temporary and not production-grade. Review the plan and billing summary in Render before creating the Blueprint resources.
+
 ## Train the illustrative model
 
 Install the optional ML extra and follow [ml-engine/README.md](ml-engine/README.md):

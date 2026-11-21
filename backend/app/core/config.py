@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./fraud_detection.db"
     redis_url: str | None = None
     api_key: str | None = None
+    cors_origins: str = "*"
     requests_per_minute: int = 120
     high_amount_threshold: Decimal = Decimal("2500.00")
     customer_velocity_limit: int = 5
@@ -33,3 +34,11 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
+
+
+def get_database_url() -> str:
+    """Use the psycopg 3 driver for Render's standard PostgreSQL connection URL."""
+    url = get_settings().database_url
+    if url.startswith("postgresql://"):
+        return url.replace("postgresql://", "postgresql+psycopg://", 1)
+    return url
