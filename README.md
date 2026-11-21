@@ -16,20 +16,11 @@ See [docs/architecture.md](docs/architecture.md) for system boundaries, the tran
 - Responsive monitoring dashboard with sample transaction controls and five-second refresh.
 - Synthetic model-data generator and evaluation workflow. Synthetic performance is not evidence of real-world fraud detection quality.
 
-## Environment
+## Requirements
 
-The laptop has Python 3.14.2, Node.js 24.13.0, npm 11.6.2, and Git 2.51.1. Docker is not available on PATH. Project packages support Python 3.12–3.14; the containers use Python 3.12 and Node.js 22. Node.js is only needed for the dashboard. Docker Desktop with WSL2 is needed for PostgreSQL, Redis rate counters, and the outbox worker; local SQLite works without it.
-
-Check the installed versions in PowerShell:
-
-```powershell
-python --version
-node --version
-npm --version
-git --version
-docker --version
-docker compose version
-```
+- Python 3.12–3.14 for the API and optional model workflow.
+- Node.js 22 or newer for the dashboard development server.
+- Docker Desktop with the WSL2 backend for the PostgreSQL, Redis, and outbox-worker Compose stack. Docker is optional when using the local SQLite setup.
 
 ## Run locally
 
