@@ -1,0 +1,82 @@
+# Render Blueprint for a public portfolio demo.
+# This is not configured for real payment data or production fraud decisions.
+previews:
+  generation: "off"
+
+services:
+  - type: web
+    name: mahesh-fraud-engine-api
+    runtime: docker
+    repo: https://github.com/Maheshagathamudi/fraud-detection-project
+    branch: main
+    region: singapore
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /api/v1/health/ready
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: ENVIRONMENT
+        value: development
+      - key: DATABASE_URL
+        fromDatabase:
+          name: mahesh-fraud-engine-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: mahesh-fraud-engine-redis
+          property: connectionString
+      - key: CORS_ORIGINS
+        value: "*"
+
+  - type: worker
+    name: mahesh-fraud-engine-outbox-worker
+    runtime: docker
+    repo: https://github.com/Maheshagathamudi/fraud-detection-project
+    branch: main
+    region: singapore
+    plan: 0.5c-512mb
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    dockerCommand: python -m app.workers.outbox_worker
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: ENVIRONMENT
+        value: development
+      - key: DATABASE_URL
+        fromDatabase:
+          name: mahesh-fraud-engine-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: mahesh-fraud-engine-redis
+          property: connectionString
+
+  - type: keyvalue
+    name: mahesh-fraud-engine-redis
+    region: singapore
+    plan: free
+    ipAllowList: []
+
+  - type: web
+    name: mahesh-fraud-engine-dashboard
+    runtime: static
+    repo: https://github.com/Maheshagathamudi/fraud-detection-project
+    branch: main
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./dist
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://mahesh-fraud-engine-api.onrender.com
+
+databases:
+  - name: mahesh-fraud-engine-db
+    databaseName: fraud
+    user: fraud
+    plan: free
+    region: singapore
+    postgresMajorVersion: "16"

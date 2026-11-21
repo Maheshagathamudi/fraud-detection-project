@@ -3,8 +3,10 @@ export interface Reason { rule_id: string; points: number; reason: string }
 export interface Transaction { id: number; amount: string; currency: string; occurred_at: string; score: number; action: Action; review_status: "not_required" | "pending" | "approved" | "declined"; model_probability: number | null; model_version: string | null; policy_version: string; reasons: Reason[]; created_at: string }
 export interface Summary { total: number; actions: Record<Action, number>; open_reviews: number; average_score: number }
 
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
+
 const api = async <T,>(path: string, init?: RequestInit): Promise<T> => {
-  const response = await fetch(`/api/v1${path}`, { ...init, headers: { "Content-Type": "application/json", ...init?.headers } });
+  const response = await fetch(`${API_BASE_URL}/api/v1${path}`, { ...init, headers: { "Content-Type": "application/json", ...init?.headers } });
   if (!response.ok) { const body = await response.json(); throw new Error(body.detail ?? `Request failed (${response.status})`); }
   return response.json() as Promise<T>;
 };
