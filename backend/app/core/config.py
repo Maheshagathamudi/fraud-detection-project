@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     redis_url: str | None = None
     api_key: str | None = None
     cors_origins: str = "*"
+    run_outbox_worker: bool = False
     requests_per_minute: int = 120
     high_amount_threshold: Decimal = Decimal("2500.00")
     customer_velocity_limit: int = 5

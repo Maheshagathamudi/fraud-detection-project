@@ -1,6 +1,7 @@
 """Publish durable outbox events to a Redis Stream with at-least-once delivery."""
 import json
 import logging
+import threading
 import time
 from datetime import datetime, timezone
 
@@ -55,19 +56,23 @@ def publish_one(session_factory, redis_client: Redis) -> bool:
         session.close()
 
 
-def main() -> None:
+def run_until_stopped(stop_event: threading.Event) -> None:
     settings = get_settings()
     if not settings.redis_url:
-        raise SystemExit("REDIS_URL is required for the outbox worker")
+        raise RuntimeError("REDIS_URL is required for the outbox worker")
     redis_client = Redis.from_url(settings.redis_url, decode_responses=True)
     session_factory = get_session_factory()
     logger.info("Outbox worker publishing to Redis Stream %s", STREAM_NAME)
     try:
-        while True:
+        while not stop_event.is_set():
             if not publish_one(session_factory, redis_client):
-                time.sleep(0.5)
+                stop_event.wait(0.5)
     finally:
         redis_client.close()
+
+
+def main() -> None:
+    run_until_stopped(threading.Event())
 
 
 if __name__ == "__main__":

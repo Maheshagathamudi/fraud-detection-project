@@ -68,11 +68,11 @@ The dashboard is at `http://localhost:5173`; the API docs are at `http://localho
 
 ## Deploy a Render demo
 
-The root `render.yaml` defines a public dashboard, API, PostgreSQL database, Redis-compatible Key Value instance, and outbox worker. Connect this GitHub repository to Render as a Blueprint and select the `main` branch. The dashboard is built as a static site; the API and worker use the backend Dockerfile.
+The root `render.yaml` defines a public dashboard, API, PostgreSQL database, and Redis-compatible Key Value instance. Connect this GitHub repository to Render as a Blueprint and select the `main` branch. To fit the free plan, the API runs the outbox poller in a background thread instead of creating a separate paid worker service.
 
 This Blueprint is configured for a portfolio demo with synthetic transactions. It sets the API to development mode so the browser dashboard can use the demo endpoints; do not send real payment or personal data to this deployment. Restrict CORS and add real authentication before using it beyond a demo.
 
-The dashboard, API, PostgreSQL, and Key Value use free plans. Render's background worker has no free plan; the Blueprint uses its smallest worker plan, currently listed at about $7/month. Free PostgreSQL expires after 30 days, and free Key Value data is not persistent across restarts, so this setup is temporary and not production-grade. Review the plan and billing summary in Render before creating the Blueprint resources.
+The dashboard, API, PostgreSQL, and Key Value use free plans. The free API can spin down after 15 minutes without traffic, so outbox publishing pauses while the API sleeps and resumes when it wakes. Free PostgreSQL expires after 30 days, and free Key Value data is not persistent across restarts. This setup is temporary and not production-grade.
 
 ## Train the illustrative model
 
