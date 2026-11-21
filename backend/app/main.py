@@ -1,3 +1,6 @@
+import asyncio
+import logging
+import threading
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -8,15 +11,28 @@ from app.core.rate_limit import RateLimitMiddleware
 from app.core.redis_client import get_redis_client
 
 settings = get_settings()
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     if settings.environment.lower() != "development" and not settings.api_key:
         raise RuntimeError("API_KEY must be configured outside development")
+    stop_event = threading.Event()
+    worker_task = None
+    if settings.run_outbox_worker:
+        from app.workers.outbox_worker import run_until_stopped
+
+        worker_task = asyncio.create_task(asyncio.to_thread(run_until_stopped, stop_event))
     try:
         yield
     finally:
+        if worker_task is not None:
+            stop_event.set()
+            try:
+                await asyncio.wait_for(asyncio.shield(worker_task), timeout=25)
+            except asyncio.TimeoutError:
+                logger.warning("Embedded outbox worker did not stop before the shutdown timeout")
         if settings.redis_url:
             await get_redis_client(settings.redis_url).aclose()
 
